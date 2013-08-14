@@ -7,13 +7,10 @@
  */
 
 Yii::import('zii.widgets.grid.CGridView');
-Yii::import('ext.EDataTables.*');
 
 /**
  * CsvView allows output a large dataset in a CSV format by using CDbDataReader on a CDbCommand.
  * Because it inherits from the CGridView widget, same column configuration is allowed.
- *
- * The default classes for columns are taken from EDataTables extension to support fetching formatted output not wrapped in <td> tags.
  *
  * Tips:
  * - to include a line number or id column, add it to the column definition
@@ -31,7 +28,7 @@ class CsvView extends CGridView
 	 */
 	public $columnBehaviors = array(
 		array(
-			'class'=>'ext.EDataTables.ECellContentBehavior',
+			'class'=>'ext.exporter.ECellContentBehavior',
 			'name'=>'cellContentBehavior',
 			'provides'=>'getDataCellContent',
 		),

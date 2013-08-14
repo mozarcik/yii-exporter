@@ -10,8 +10,6 @@
  * JsonView allows output a large dataset in a JSON format by using CDbDataReader on a CDbCommand.
  * Because it inherits from the CGridView widget, same column configuration is allowed.
  *
- * The default classes for columns are taken from EDataTables extension to support fetching formatted output not wrapped in <td> tags.
- *
  * @author Jan Was <jwas@nets.com.pl>
  */
 class JsonView extends CsvView

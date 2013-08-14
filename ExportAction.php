@@ -1,7 +1,15 @@
 <?php
 
 class ExportAction extends CAction {
+	/**
+	 * @var array CGridView columns definition
+	 */
 	public $columns;
+	/**
+	 * @var string if the $widget property doesn't contain a dataProvider,
+	 * a model of this class will be instantiated to call the search() method witch should return a dataProvider.
+	 */
+	public $modelClass;
 
 	/**
 	 * @var mixed string with widget class name or array with widget options, defaults to CsvView
@@ -23,6 +31,7 @@ class ExportAction extends CAction {
 
 		// as this could be expensive, create a dataProvider only if one wasn't provided
 		if (!isset($this->widget['dataProvider'])) {
+			$model = new $this->modelClass('search');
 			$this->widget['dataProvider'] = $model->search();
 		}
 
