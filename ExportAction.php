@@ -1,0 +1,37 @@
+<?php
+
+class ExportAction extends CAction {
+	public $columns;
+
+	/**
+	 * @var mixed string with widget class name or array with widget options, defaults to CsvView
+	 */
+	public $widget;
+
+	public function run() {
+		// set some defaults
+		$widgetDefaults = array(
+			'class'=>'ext.exporter.CsvView',
+			'dataColumnClass' => 'CDataColumn',
+			'columns'=>$this->columns,
+		);
+		if ($this->widget === null)
+			$this->widget = array();
+		elseif (is_string($this->widget))
+			$this->widget = array('class'=>$this->widget);
+		$this->widget = array_merge($widgetDefaults, $this->widget);
+
+		// as this could be expensive, create a dataProvider only if one wasn't provided
+		if (!isset($this->widget['dataProvider'])) {
+			$this->widget['dataProvider'] = $model->search();
+		}
+
+		// set timer to 5 minutes
+		set_time_limit(3600);
+
+		$widget = $this->widget['class'];
+		unset($this->widget['class']);
+		$this->controller->widget($widget, $this->widget);
+	}
+}
+
