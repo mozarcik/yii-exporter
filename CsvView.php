@@ -24,16 +24,6 @@ class CsvView extends CGridView
 	 */
 	public $dataColumnClass = 'CDataColumn';
 	/**
-	 * @var array default behaviors to attach to columns, see default value for an example
-	 */
-	public $columnBehaviors = array(
-		array(
-			'class'=>'ext.exporter.ECellContentBehavior',
-			'name'=>'cellContentBehavior',
-			'provides'=>'getDataCellContent',
-		),
-	);
-	/**
 	 * @var boolean should invisible columns be included anyway, useful to export all possible data without creating extra column configuration
 	 */
 	public $includeInvisible = true;
@@ -156,11 +146,6 @@ class CsvView extends CGridView
 					$column['class']=$this->dataColumnClass;
 				}
 				$column=Yii::createComponent($column, $this);
-				foreach($this->columnBehaviors as $columnBehavior) {
-					if (!isset($columnBehavior['provides']) || !method_exists($column, $columnBehavior['provides'])) {
-						$column->attachBehavior($columnBehavior['name'],$columnBehavior['class']);
-					}
-				}
 			}
 			if(!$this->includeInvisible && !$column->visible)
 			{

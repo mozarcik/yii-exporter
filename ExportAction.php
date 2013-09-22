@@ -20,7 +20,7 @@ class ExportAction extends CAction {
 		// set some defaults
 		$widgetDefaults = array(
 			'class'=>'ext.exporter.CsvView',
-			'dataColumnClass' => 'CDataColumn',
+			'dataColumnClass' => 'ext.exporter.EDataColumn',
 			'columns'=>$this->columns,
 		);
 		if ($this->widget === null)
@@ -32,7 +32,7 @@ class ExportAction extends CAction {
 		// as this could be expensive, create a dataProvider only if one wasn't provided
 		if (!isset($this->widget['dataProvider'])) {
 			$model = new $this->modelClass('search');
-			$this->widget['dataProvider'] = $model->search();
+			$this->widget['dataProvider'] = $model->search($this->columns);
 		}
 
 		// set timer to 5 minutes
