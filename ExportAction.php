@@ -21,7 +21,7 @@ class ExportAction extends CAction {
 		// set some defaults
 		$widgetDefaults = array(
 			'class'=>'ext.exporter.CsvView',
-			'dataColumnClass' => 'ext.EDataTables.EDataColumn',
+			'dataColumnClass' => 'edt.EDataColumn',
 			'columns'=>$this->columns,
 		);
 		if ($this->widget === null)
