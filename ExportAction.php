@@ -31,7 +31,8 @@ class ExportAction extends CAction {
 
 		// as this could be expensive, create a dataProvider only if one wasn't provided
 		if (!isset($this->widget['dataProvider'])) {
-			$model = new $this->modelClass('search');
+			$modelClass = $this->modelClass;
+			$model = new $modelClass('search');
 			$this->widget['dataProvider'] = $model->search($this->columns);
 		}
 
@@ -43,4 +44,3 @@ class ExportAction extends CAction {
 		$this->controller->widget($widget, $this->widget);
 	}
 }
-
