@@ -27,13 +27,7 @@ class JsonView extends ExporterView
 
 	public function renderHeader()
 	{
-		$headers = array();
-		foreach($this->columns as $column) {
-			ob_start();
-			$column->renderHeaderCellContent();
-			$headers[] = ob_get_clean();
-		}
-		echo "[\n".json_encode($headers);
+		echo "[\n ".json_encode($this->getHeader());
 	}
 
 	public function renderBody()
@@ -42,12 +36,12 @@ class JsonView extends ExporterView
 
 		$row = 0;
 		while ($data = $dataReader->read()) {
-			echo ",\n".json_encode($this->renderRow($row++, $data));
+			echo ",\n ".json_encode($this->renderRow($row++, $data));
 		}
 	}
 
 	public function renderFooter()
 	{
-		echo "]\n";
+		echo "\n]";
 	}
 }

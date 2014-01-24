@@ -24,16 +24,6 @@ abstract class ExporterView extends CGridView
 	 */
 	public $dataColumnClass = 'CDataColumn';
 	/**
-	 * @var array default behaviors to attach to columns, see default value for an example
-	 */
-	public $columnBehaviors = array(
-		array(
-			'class'=>'ext.exporter.ECellContentBehavior',
-			'name'=>'cellContentBehavior',
-			'provides'=>'getDataCellContent',
-		),
-	);
-	/**
 	 * @var boolean should invisible columns be included anyway, useful to export all possible data without creating extra column configuration
 	 */
 	public $includeInvisible = true;
@@ -61,7 +51,10 @@ abstract class ExporterView extends CGridView
 	 * @var boolean should html tags be stripped from output values, disable for really big exports to improve efficiency
 	 */
 	public $stripTags = true;
-
+    /**
+     * @var boolean should html entities be decoded from output values
+     */
+    public $decodeHtmlEntities = true;
 	/**
 	 * @var CActiveRecord model used to fill with current row and pass to row renderer
 	 */
@@ -88,11 +81,24 @@ abstract class ExporterView extends CGridView
 		if ($this->disableBuffering)
 			while (ob_get_level()) ob_end_clean();
 		if (!$this->disableHttpHeaders) {
-			header('Content-Type: '.$this->mimetype);
-			header('Content-Disposition: attachment; filename="'.$this->filename.'"');
+            if($this->mimetype) {
+                header('Content-Type: '.$this->mimetype);
+            }
+
+            if($this->filename !== null && strlen($this->filename) > 0) {
+                $filename = $this->filename;
+
+                if($this->fileExt !== null && strlen($this->fileExt) > 0) {
+                    $filename .= date('_U_Ymd.') . $this->fileExt;
+                }
+
+                header('Content-Disposition: attachment; filename="'.$filename.'"');
+            }
+
 			header('Pragma: no-cache');
 			header('Expires: 0');
 		}
+
 		$this->renderItems();
 		if (!$this->disableHttpHeaders) {
 			Yii::app()->end();
@@ -114,8 +120,10 @@ abstract class ExporterView extends CGridView
 		if($this->columns===array())
 		{
 			if($this->dataProvider instanceof CActiveDataProvider)
+			{
 				$this->columns=$this->dataProvider->model->attributeNames();
-			else if($this->dataProvider instanceof IDataProvider)
+			}
+			elseif($this->dataProvider instanceof IDataProvider)
 			{
 				// use the keys of the first row of data as the default columns
 				$data=$this->dataProvider->getData();
@@ -135,12 +143,8 @@ abstract class ExporterView extends CGridView
 					$column['class']=$this->dataColumnClass;
 				}
 				$column=Yii::createComponent($column, $this);
-				foreach($this->columnBehaviors as $columnBehavior) {
-					if (!isset($columnBehavior['provides']) || !method_exists($column, $columnBehavior['provides'])) {
-						$column->attachBehavior($columnBehavior['name'],$columnBehavior['class']);
-					}
-				}
 			}
+            // note: includeInvisible option
 			if(!$this->includeInvisible && !$column->visible)
 			{
 				unset($this->columns[$i]);
@@ -206,10 +210,14 @@ abstract class ExporterView extends CGridView
 		$values = array();
 
 		$this->_model = $this->dataProvider->model->populateRecord($data);
+        $this->dataProvider->setData(array($row => $this->_model));
+        
 		foreach($this->columns as $column) {
-			$value = $column->getDataCellContent($row,$this->_model);
+			$value = $column->getDataCellContent($row);
 			if ($this->stripTags)
 				$value = strip_tags($value);
+            if($this->decodeHtmlEntities)
+                $value = html_entity_decode($value);
 			if ($this->encoding !== null)
 				$value = iconv('UTF-8', $this->encoding, $value);
 			$values[] = $value;
@@ -229,7 +237,7 @@ abstract class ExporterView extends CGridView
 
     public function renderHeaderCellContent($column)
     {
-		if($column->name!==null && $column->header===null)
+		if((isset($column->name) && $column->name!==null) && (!isset($column->header) || $column->header===null))
 		{
 			if($this->dataProvider instanceof CActiveDataProvider)
 				return $this->dataProvider->model->getAttributeLabel($column->name);

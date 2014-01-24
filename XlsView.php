@@ -12,7 +12,7 @@ class XlsView extends ExporterView
 	/**
 	 * @var string mimetype sent in http headers
 	 */
-	public $mimetype = 'application/vnd.ms-excel';
+	public $mimetype = 'application/excel';
 
     protected $_typeMap;
 
@@ -42,7 +42,7 @@ class XlsView extends ExporterView
 		$this->_model = $this->dataProvider->model->populateRecord($data);
 		foreach($this->columns as $column) {
             
-            if (!is_array($column->type) && isset($this->_typeMap[$column->type])) {
+            if (isset($column->type) && !is_array($column->type) && isset($this->_typeMap[$column->type])) {
                 $type = $this->_typeMap[$column->type]['type'];
                 $style = $column->type.'Format';
                 /*if ($column instanceof CDataColumn) {
