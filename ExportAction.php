@@ -45,6 +45,7 @@ class ExportAction extends CAction {
 			$columns = $this->widget['columns'];
 			list($query, $criteria) = $c->loadQuery($c->getId(), 'index', $c->modelClass, $columns, $filterForm);
 			if ($this->columns_from_query) $this->widget['columns'] = $columns;
+
 			$this->criteria->mergeWith($criteria);
 
 			if (isset($_GET['mode']) && isset($_GET['selected'])) {

@@ -36,10 +36,14 @@ abstract class ExporterView extends CGridView
 	 */
 	public $disableHttpHeaders = false;
 	/**
-	 * @var string filename sent in http headers
+	 * @var string filename sent in http headers. Defaults to null (means it won't set 'Content-Disposition: attachment' HTTP header)
 	 */
 	public $filename;
-	/**
+    /**
+     * @var string fileExt file extension., if value is empty|null then class assumes $filename contains it, otherwise export date will be placed between filename and file extension
+     */
+    public $fileExt;
+    /**
 	 * @var string mimetype sent in http headers
 	 */
 	public $mimetype = 'text/plain';
