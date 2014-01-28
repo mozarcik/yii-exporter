@@ -1,8 +1,5 @@
 <?php
 
-Yii::import('ext.exporter.ExporterView');
-Yii::import('ext.exporter.ExcelFormatter');
-
 class XlsView extends ExporterView
 {
     /**

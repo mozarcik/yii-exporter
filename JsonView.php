@@ -6,8 +6,6 @@
  * @copyright Copyright &copy; 2013-2013 Jan Was
  */
 
-Yii::import('ext.exporter.ExporterView');
-
 /**
  * JsonView allows output a large dataset in a JSON format by using CDbDataReader on a CDbCommand.
  * Because it inherits from the CGridView widget, same column configuration is allowed.
