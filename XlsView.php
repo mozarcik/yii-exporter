@@ -40,6 +40,7 @@ class XlsView extends ExporterView
 		$values = array();
 
 		$this->_model = $this->dataProvider->model->populateRecord($data);
+        $this->dataProvider->setData(array($row => $this->_model));
 		foreach($this->columns as $column) {
             
             if (isset($column->type) && !is_array($column->type) && isset($this->_typeMap[$column->type])) {

@@ -19,7 +19,7 @@ class EActiveFinder extends CActiveFinder {
 		$query = new CJoinQuery($this->_joinTree, $criteria);
 		$this->_joinTree->buildQuery($query);
 		if (!empty($select))
-			$query->selects = array($select);
+			$query->selects = is_array($select) ? $select : array($select);
 		return $query->createCommand($this->_builder);
 	}
 
