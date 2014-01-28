@@ -195,7 +195,6 @@ abstract class ExporterView extends CGridView
 		if (empty($baseCriteria->with)) {
 			$command = $model->getCommandBuilder()->createFindCommand($model->tableSchema, $baseCriteria);
 		} else {
-            Yii::import('ext.exporter.EActiveFinder');
 			$finder = new EActiveFinder($model, $baseCriteria->with);
 			$command = $finder->createCommand($baseCriteria);
 		}
