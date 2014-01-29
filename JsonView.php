@@ -30,12 +30,14 @@ class JsonView extends ExporterView
 
 	public function renderBody()
 	{
-		$dataReader = $this->getDataReader();
+		list($dataReader, $finder) = $this->getDataReader();
 
 		$row = 0;
 		while ($data = $dataReader->read()) {
-			echo ",\n ".json_encode($this->renderRow($row++, $data));
+			echo ",\n ".json_encode($this->renderRow($row++, $data, $finder));
 		}
+        if ($finder!==null)
+            $finder->destroyJoinTree();
 	}
 
 	public function renderFooter()

@@ -30,13 +30,14 @@ class XlsView extends ExporterView
 	/**
 	 * @param integer $row the row number (zero-based).
 	 * @param array $data result of CDbDataReader.read()
+	 * @param CActiveFinder $finder a finder object returned by getDataReader() method
 	 * @return array processed values ready for output
 	 */
-	public function renderRow($row, $data)
+	public function renderRow($row, $data, $finder=null)
 	{
 		$values = array();
 
-		$this->_model = $this->dataProvider->model->populateRecord($data);
+		$this->_model = $finder === null ? $this->dataProvider->model->populateRecord($data) : $finder->populateRecord($data);
         $this->dataProvider->setData(array($row => $this->_model));
 		foreach($this->columns as $column) {
             
@@ -132,12 +133,14 @@ XML;
 
 	public function renderBody()
 	{
-		$dataReader = $this->getDataReader();
+		list($dataReader, $finder) = $this->getDataReader();
 		$row = 0;
 
 		while ($data = $dataReader->read()) {
-            echo '<Row>'.implode('', $this->renderRow($row++, $data)).'</Row>'."\n";
+            echo '<Row>'.implode('', $this->renderRow($row++, $data, $finder)).'</Row>'."\n";
 		}
+        if ($finder!==null)
+            $finder->destroyJoinTree();
 	}
 
 	public function renderFooter()
