@@ -187,32 +187,81 @@ abstract class ExporterView extends CGridView
 		return Yii::createComponent($column, $this);
 	}
 
+    /**
+     * This is based on CActiveDataProvider::fetchData().
+     * @todo afterFind may not be called properly in some cases
+     * @todo check effects of enabled offset/limit (baseLimited in CJoinElement::find in CActiveFinder.php)
+     * @return array containing CDbDataReader and CActiveFinder objects
+     */
 	public function getDataReader() {
-		$this->dataProvider->setPagination(false);
 		$model = $this->dataProvider->model;
-		$baseCriteria = $this->dataProvider->getCriteria();
+		$criteria = $this->dataProvider->getCriteria();
 
-		if (empty($baseCriteria->with)) {
-			$command = $model->getCommandBuilder()->createFindCommand($model->tableSchema, $baseCriteria);
+		if(($pagination=$this->dataProvider->getPagination())!==false)
+		{
+			$pagination->setItemCount($this->dataProvider->getTotalItemCount());
+			$pagination->applyLimit($criteria);
+		}
+
+		$baseCriteria = $model->getDbCriteria(false);
+
+		if(($sort=$this->dataProvider->getSort())!==false)
+		{
+			// set model criteria so that CSort can use its table alias setting
+			if($baseCriteria!==null)
+			{
+				$c=clone $baseCriteria;
+				$c->mergeWith($criteria);
+				$model->setDbCriteria($c);
+			}
+			else
+				$model->setDbCriteria($criteria);
+			$sort->applyOrder($criteria);
+		}
+
+		$model->setDbCriteria($baseCriteria!==null ? clone $baseCriteria : null);
+
+        list($dataReader, $finder) = $this->createDataReader($model, $criteria);
+
+		$model->setDbCriteria($baseCriteria);
+
+		return array($dataReader, $finder);
+	}
+
+    /**
+     * This is based on CActiveRecord::query().
+     * @param CActiveRecord $model
+     * @param CDbCriteria $criteria
+     * @return array containing CDbDataReader and CActiveFinder objects
+     */
+    private function createDataReader($model, $criteria)
+    {
+		$model->beforeFindInternal();
+		$model->applyScopes($criteria);
+
+		if (empty($criteria->with)) {
+            $finder = null;
+			$command = $model->getCommandBuilder()->createFindCommand($model->tableSchema, $criteria, $model->getTableAlias());
 		} else {
-			$finder = new EActiveFinder($model, $baseCriteria->with);
-			$command = $finder->createCommand($baseCriteria);
+			$finder = new EActiveFinder($model, $criteria->with);
+			$command = $finder->createCommand($criteria);
 		}
 		$command->prepare();
 		$command->execute($command->params);
-		return new CDbDataReader($command);
-	}
+        return array(new CDbDataReader($command), $finder);
+    }
 
 	/**
 	 * @param integer $row the row number (zero-based).
 	 * @param array $data result of CDbDataReader.read()
+	 * @param CActiveFinder $finder a finder object returned by getDataReader() method
 	 * @return array processed values ready for output
 	 */
-	public function renderRow($row, $data)
+	public function renderRow($row, $data, $finder=null)
 	{
 		$values = array();
 
-		$this->_model = $this->dataProvider->model->populateRecord($data);
+		$this->_model = $finder === null ? $this->dataProvider->model->populateRecord($data) : $finder->populateRecord($data);
         $this->dataProvider->setData(array($row => $this->_model));
         
 		foreach($this->columns as $column) {

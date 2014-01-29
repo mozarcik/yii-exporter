@@ -61,22 +61,25 @@ class CsvView extends ExporterView
 
 	public function renderBody()
 	{
-		$dataReader = $this->getDataReader();
+		list($dataReader, $finder) = $this->getDataReader();
 
 		$row = 0;
 		while ($data = $dataReader->read()) {
-			fputcsv($this->_fp, $this->renderRow($row++, $data), $this->delimiter, $this->enclosure);
+			fputcsv($this->_fp, $this->renderRow($row++, $data, $finder), $this->delimiter, $this->enclosure);
 		}
+        if ($finder!==null)
+            $finder->destroyJoinTree();
 	}
 
 	/**
 	 * @param integer $row the row number (zero-based).
 	 * @param array $data result of CDbDataReader.read()
+	 * @param CActiveFinder $finder a finder object returned by getDataReader() method
 	 * @return array processed values ready for output
 	 */
-	public function renderRow($row, $data)
+	public function renderRow($row, $data, $finder=null)
 	{
-        $values = parent::renderRow($row, $data);
+        $values = parent::renderRow($row, $data, $finder);
         foreach($values as $key=>$value) {
 			if ($this->replaceNewlines!==null)
 				$values[$key] = str_replace("\n", $this->replaceNewlines, $value);
