@@ -244,8 +244,8 @@ class EJoinElement extends CJoinElement
 			foreach($this->children as $child)
 				$child->clear();
 		}
-        unset($this->records);
-        unset($this->_related);
+        $this->records = array();
+        $this->_related = array();
     }
 
 	/**
