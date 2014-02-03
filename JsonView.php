@@ -30,12 +30,26 @@ class JsonView extends ExporterView
 
 	public function renderBody()
 	{
-		list($dataReader, $finder) = $this->getDataReader();
+        $isActiveDataProvider = $this->dataProvider instanceof CActiveDataProvider;
+        if (!$isActiveDataProvider || ($this->dataProvider->pagination !== false && $this->dataProvider->pagination->limit < 1000)) {
+            $dataReader = null;
+            $finder = null;
+        } else {
+            //! @todo there could be a dataReader for CSqlDataProvider and some sort of iteratable container for CArrayDataProvider to use next()
+            list($dataReader, $finder) = $this->getDataReader();
+        }
 
 		$row = 0;
-		while ($data = $dataReader->read()) {
-			echo ",\n ".json_encode($this->renderRow($row++, $data, $finder));
-		}
+        if ($dataReader !== null) {
+            while ($data = $dataReader->read()) {
+                $data = $this->prepareRow($row, $data, $finder, $isActiveDataProvider);
+                echo ",\n ".json_encode($this->renderRow($row++, $data, $isActiveDataProvider));
+            }
+        } else {
+            foreach ($this->dataProvider->data as $data) {
+                echo ",\n ".json_encode($this->renderRow($row++, $data, $isActiveDataProvider));
+            }
+        }
         if ($finder!==null)
             $finder->destroyJoinTree();
 	}

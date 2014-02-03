@@ -251,19 +251,33 @@ abstract class ExporterView extends CGridView
         return array(new CDbDataReader($command), $finder);
     }
 
+    /**
+	 * @param integer $row the row number (zero-based).
+	 * @param array $data result of CDbDataReader.read() or an item from the CDataProvider.data array
+     * @param CActiveFinder $finder 
+     * @param boolean $isActiveDataProvider
+     * @param boolean $isStreaming true when CDataReader is used instead of CDataProvider.data
+	 * @return mixed a model or array
+     */
+    protected function prepareRow($row, $data, $finder, $isActiveDataProvider)
+    {
+        if ($isActiveDataProvider) {
+            $data = $finder === null ? $this->dataProvider->model->populateRecord($data) : $finder->populateRecord($data);
+        }
+        $this->dataProvider->setData(array($row => $data));
+        return $data;
+    }
+
 	/**
 	 * @param integer $row the row number (zero-based).
-	 * @param array $data result of CDbDataReader.read()
-	 * @param CActiveFinder $finder a finder object returned by getDataReader() method
+	 * @param mixed $data an item from the CDataProvider.data array
+     * @param boolean $isActiveDataProvider true if the dataProvider property is an instance of CActiveDataProvider
 	 * @return array processed values ready for output
 	 */
-	public function renderRow($row, $data, $finder=null)
+	public function renderRow($row, $data, $isActiveDataProvider)
 	{
 		$values = array();
 
-		$this->_model = $finder === null ? $this->dataProvider->model->populateRecord($data) : $finder->populateRecord($data);
-        $this->dataProvider->setData(array($row => $this->_model));
-        
 		foreach($this->columns as $column) {
 			$value = $column->getDataCellContent($row);
 			if ($this->stripTags)
