@@ -30,15 +30,13 @@ class XlsView extends ExporterView
 	/**
 	 * @param integer $row the row number (zero-based).
 	 * @param array $data result of CDbDataReader.read()
-	 * @param CActiveFinder $finder a finder object returned by getDataReader() method
+     * @param boolean $isActiveDataProvider true if the dataProvider property is an instance of CActiveDataProvider
 	 * @return array processed values ready for output
 	 */
-	public function renderRow($row, $data, $finder=null)
+	public function renderRow($row, $data, $isActiveDataProvider)
 	{
 		$values = array();
 
-		$this->_model = $finder === null ? $this->dataProvider->model->populateRecord($data) : $finder->populateRecord($data);
-        $this->dataProvider->setData(array($row => $this->_model));
 		foreach($this->columns as $column) {
             
             if (isset($column->type) && !is_array($column->type) && isset($this->_typeMap[$column->type])) {
@@ -58,7 +56,7 @@ class XlsView extends ExporterView
                 $type = 'String';
                 $style = null;
             }
-            $value = $column->getDataCellContent($row, $this->_model);
+            $value = $column->getDataCellContent($row);
 
 			if ($this->stripTags)
 				$value = strip_tags($value);
@@ -133,12 +131,26 @@ XML;
 
 	public function renderBody()
 	{
-		list($dataReader, $finder) = $this->getDataReader();
-		$row = 0;
+        $isActiveDataProvider = $this->dataProvider instanceof CActiveDataProvider;
+        if (!$isActiveDataProvider || ($this->dataProvider->pagination !== false && $this->dataProvider->pagination->limit < 1000)) {
+            $dataReader = null;
+            $finder = null;
+        } else {
+            //! @todo there could be a dataReader for CSqlDataProvider and some sort of iteratable container for CArrayDataProvider to use next()
+            list($dataReader, $finder) = $this->getDataReader();
+        }
 
-		while ($data = $dataReader->read()) {
-            echo '<Row>'.implode('', $this->renderRow($row++, $data, $finder)).'</Row>'."\n";
-		}
+		$row = 0;
+        if ($dataReader !== null) {
+            while ($data = $dataReader->read()) {
+                $data = $this->prepareRow($row, $data, $finder, $isActiveDataProvider);
+                echo '<Row>'.implode('', $this->renderRow($row++, $data, $isActiveDataProvider)).'</Row>'."\n";
+            }
+        } else {
+            foreach ($this->dataProvider->data as $data) {
+                echo '<Row>'.implode('', $this->renderRow($row++, $data, $isActiveDataProvider)).'</Row>'."\n";
+            }
+        }
         if ($finder!==null)
             $finder->destroyJoinTree();
 	}

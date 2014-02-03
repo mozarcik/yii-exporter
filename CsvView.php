@@ -61,12 +61,26 @@ class CsvView extends ExporterView
 
 	public function renderBody()
 	{
-		list($dataReader, $finder) = $this->getDataReader();
+        $isActiveDataProvider = $this->dataProvider instanceof CActiveDataProvider;
+        if (!$isActiveDataProvider || ($this->dataProvider->pagination !== false && $this->dataProvider->pagination->limit < 1000)) {
+            $dataReader = null;
+            $finder = null;
+        } else {
+            //! @todo there could be a dataReader for CSqlDataProvider and some sort of iteratable container for CArrayDataProvider to use next()
+            list($dataReader, $finder) = $this->getDataReader();
+        }
 
 		$row = 0;
-		while ($data = $dataReader->read()) {
-			fputcsv($this->_fp, $this->renderRow($row++, $data, $finder), $this->delimiter, $this->enclosure);
-		}
+        if ($dataReader !== null) {
+            while ($data = $dataReader->read()) {
+                $data = $this->prepareRow($row, $data, $finder, $isActiveDataProvider);
+                fputcsv($this->_fp, $this->renderRow($row++, $data, $isActiveDataProvider), $this->delimiter, $this->enclosure);
+            }
+        } else {
+            foreach ($this->dataProvider->data as $data) {
+                fputcsv($this->_fp, $this->renderRow($row++, $data, $isActiveDataProvider), $this->delimiter, $this->enclosure);
+            }
+        }
         if ($finder!==null)
             $finder->destroyJoinTree();
 	}
