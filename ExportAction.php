@@ -43,7 +43,7 @@ class ExportAction extends CAction {
 			$filterForm = $c->loadFilterForm($c->getId(), $c->modelClass.'Filter', $filterId, '_filterForm');
 			//! @todo how to configure from which action a default query should be used? check out second argument below:
 			$columns = $this->widget['columns'];
-			list($query, $criteria) = $c->loadQuery($c->getId(), 'index', $c->modelClass, $columns, $filterForm);
+			list($query, $criteria, $columns, $grouping) = $c->loadQuery($c->getId(), 'index', $c->modelClass, $columns, $filterForm);
 			if ($this->columns_from_query) $this->widget['columns'] = $columns;
 
 			$this->criteria->mergeWith($criteria);
