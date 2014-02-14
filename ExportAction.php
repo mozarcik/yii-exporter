@@ -49,12 +49,11 @@ class ExportAction extends CAction {
 			$this->criteria->mergeWith($criteria);
 
 			if (isset($_GET['mode']) && isset($_GET['selected'])) {
-				$pk = $model->primaryKey()!==null ? $model->primaryKey() : $model->tableSchema->primaryKey;
 				$pks = array_map('intval',explode(',',$_GET['selected']));
 				if ($_GET['mode']==='' || $_GET['mode']==='deselect') {
-					$this->criteria->addInCondition('"t".'.$pk, $pks);
+					$this->criteria->addInCondition('"t".'.$model->tableSchema->primaryKey, $pks);
 				} else {
-					$this->criteria->addNotInCondition('"t".'.$pk, $pks);
+					$this->criteria->addNotInCondition('"t".'.$model->tableSchema->primaryKey, $pks);
 				}
 			}
             
