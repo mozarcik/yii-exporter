@@ -172,6 +172,9 @@ XML;
         // but input may contain HTML and some of the entities are (not) valid in XML
         // in order to keep formatting as it was, this is the trick to do it
         //FIXME maybe a better way? there is a better way, probably...
+        if(is_array($text)) {
+            $text = implode(';', $text);
+        }
         return htmlentities(html_entity_decode($text), ENT_XML1 | ENT_NOQUOTES);
     }
 }
