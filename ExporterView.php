@@ -147,6 +147,11 @@ abstract class ExporterView extends CGridView
 					$column['class']=$this->dataColumnClass;
 				}
 				$column=Yii::createComponent($column, $this);
+                //do not include in export columns that are not datacolumns like button column or checkboxcolumn
+                if (!($column instanceof CDataColumn)) {
+                    unset($this->columns[$i]);
+                    continue;
+                }
 			}
             // note: includeInvisible option
 			if(!$this->includeInvisible && !$column->visible)
